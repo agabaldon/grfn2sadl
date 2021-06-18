@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <!-- Lookup parent from repository -->
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>2.5.0</version>
+    <relativePath></relativePath>
+  </parent>
+
+  <!-- Define ourselves -->
+  <groupId>com.ge.research.sadl.darpa.aske.rest</groupId>
+  <artifactId>grasen.service</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+
+  <!-- Set properties -->
+  <properties>
+    <java.version>11</java.version>
+    <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
+    <maven.compiler.showWarnings>true</maven.compiler.showWarnings>
+    <version.dialog>1.1.0-SNAPSHOT</version.dialog>
+    <version.jena>3.17.0</version.jena>
+    <version.sadl>3.5.0-SNAPSHOT</version.sadl>
+    <version.spring.boot>${project.parent.version}</version.spring.boot>
+    <version.spring.doc>1.5.9</version.spring.doc>
+    <version.xtext>2.24.0</version.xtext>
+  </properties>
+
+  <!-- Define dependencies -->
+  <dependencies>
+    <!-- compile scope dependencies -->
+    <dependency>
+      <groupId>com.ge.research.sadl</groupId>
+      <artifactId>com.ge.research.sadl</artifactId>
+      <version>${version.sadl}</version>
+    </dependency>
+
+    <!-- runtime scope dependencies -->
+    <dependency>
+      <groupId>com.ge.research.sadl</groupId>
+      <artifactId>com.ge.research.sadl.jena</artifactId>
+      <version>${version.sadl}</version>
+      <!-- scope>runtime</scope -->
+      <exclusions>
+        <exclusion>
+          <groupId>com.ge.research.sadl</groupId>
+          <artifactId>com.ge.research.sadl</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <!--  dependency>
+      <groupId>com.ge.research.sadl</groupId>
+      <artifactId>com.ge.research.sadl.jena</artifactId>
+      <version>${version.sadl}</version>
+    </dependency-->
+
+    <dependency>
+      <groupId>com.ge.research.sadl</groupId>
+      <artifactId>reasoner-api</artifactId>
+      <version>${version.sadl}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.ge.research.sadl</groupId>
+      <artifactId>reasoner-impl</artifactId>
+      <version>${version.sadl}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.8.2</version>
+      <!-- scope>runtime</scope -->
+    </dependency>
+    <!--  dependency>
+      <groupId>com.ge.research.sadl.darpa.aske.dialog</groupId>
+      <artifactId>com.ge.research.sadl.darpa.aske.dialog</artifactId>
+      <version>${version.dialog}</version>
+    </dependency -->
+    <!--  dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.8.5</version>
+    </dependency -->
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>apache-jena-libs</artifactId>
+      <version>${version.jena}</version>
+      <type>pom</type>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.xtext</groupId>
+      <artifactId>org.eclipse.xtext</artifactId>
+      <version>${version.xtext}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-ui</artifactId>
+      <version>${version.spring.doc}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+      <version>${version.spring.boot}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+      <version>${version.spring.boot}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jdt</groupId>
+      <artifactId>org.eclipse.jdt.core</artifactId>
+      <version>3.24.0</version>
+      <scope>runtime</scope>
+    </dependency>
+
+    <!-- test scope dependencies -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <version>${version.spring.boot}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <!-- Set plugin versions -->
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>com.github.ekryd.sortpom</groupId>
+          <artifactId>sortpom-maven-plugin</artifactId>
+          <version>3.0.0</version>
+          <configuration>
+            <createBackupFile>false</createBackupFile>
+            <indentSchemaLocation>true</indentSchemaLocation>
+            <lineSeparator>\n</lineSeparator>
+            <predefinedSortOrder>custom_1</predefinedSortOrder>
+            <sortDependencies>scope,groupId,artifactId</sortDependencies>
+            <sortDependencyExclusions>groupId,artifactId</sortDependencyExclusions>
+            <sortModules>true</sortModules>
+            <sortPlugins>groupId,artifactId</sortPlugins>
+            <sortProperties>true</sortProperties>
+          </configuration>
+          <executions>
+            <execution>
+              <id>default-sort</id>
+              <goals>
+                <goal>sort</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>3.1.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.8.1</version>
+          <configuration>
+            <compilerArgs>
+              <arg>-Xlint:all</arg>
+            </compilerArgs>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>3.1.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>3.0.0-M1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <version>3.0.0-M3</version>
+          <configuration>
+            <rules>
+              <requireMavenVersion>
+                <version>[3.6.3,)</version>
+              </requireMavenVersion>
+            </rules>
+          </configuration>
+          <executions>
+            <execution>
+              <id>default-enforce</id>
+              <goals>
+                <goal>enforce</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>3.0.0-M1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>3.2.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>3.2.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>3.9.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>3.2.1</version>
+          <executions>
+            <execution>
+              <id>default-jar-no-fork</id>
+              <goals>
+                <goal>jar-no-fork</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>3.0.0-M5</version>
+          <configuration>
+            <argLine>-Dfile.encoding=${project.build.sourceEncoding}</argLine>
+          </configuration>
+        </plugin>
+        <!-- Goals: mvn -N versions:display-{dependency,plugin,property}-updates -->
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>versions-maven-plugin</artifactId>
+          <version>2.8.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+          <version>${version.spring.boot}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <!-- Keep our poms looking tidy -->
+      <plugin>
+        <groupId>com.github.ekryd.sortpom</groupId>
+        <artifactId>sortpom-maven-plugin</artifactId>
+      </plugin>
+      <!-- Enforce Maven version -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+      </plugin>
+      <!-- Build source jar -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+      </plugin>
+      <!-- Build executable jar -->
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>
