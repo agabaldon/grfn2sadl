@@ -157,10 +157,10 @@ public class GrasenControllerTest {
                 MediaType.APPLICATION_JSON_VALUE, jsonContent.getBytes());
 
         MockHttpServletRequestBuilder builder =
-                MockMvcRequestBuilders.multipart("/GrFN2SADLservice/translate")
+                MockMvcRequestBuilders.multipart("/SemanticAnnotator/translate")
                                       .file(mockMultipartFile);
 
-        String firstLine = "uri \"http://aske.ge.com/test_grfn_json\" alias test_grfn_json";
+        String firstLine = "uri \"http://aske.ge.com/test_grfn\" alias test_grfn";
         mockMvc.perform(builder)
             .andDo(print())
             .andExpect(status().isOk())

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -28,6 +29,9 @@ class ApplicationTests {
     @LocalServerPort
     private int port;
 
+    @Value("${local.management.port}")
+    private int mgt_port;
+    
     @Test
     public void contextShouldLoad() {
         assertThat(controller).isNotNull();
@@ -40,7 +44,7 @@ class ApplicationTests {
 
     @Test
     public void healthShouldReturnString() throws Exception {
-        assertThat(restTemplate.getForObject("http://localhost:" + port + "/actuator/health",
+        assertThat(restTemplate.getForObject("http://localhost:" + mgt_port + "/actuator/health",
                                              String.class)).contains("{\"status\":\"UP\"}");
     }
 

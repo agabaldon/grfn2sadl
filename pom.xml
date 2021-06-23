@@ -51,12 +51,6 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <!--  dependency>
-      <groupId>com.ge.research.sadl</groupId>
-      <artifactId>com.ge.research.sadl.jena</artifactId>
-      <version>${version.sadl}</version>
-    </dependency-->
-
     <dependency>
       <groupId>com.ge.research.sadl</groupId>
       <artifactId>reasoner-api</artifactId>
@@ -71,18 +65,7 @@
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
       <version>2.8.2</version>
-      <!-- scope>runtime</scope -->
     </dependency>
-    <!--  dependency>
-      <groupId>com.ge.research.sadl.darpa.aske.dialog</groupId>
-      <artifactId>com.ge.research.sadl.darpa.aske.dialog</artifactId>
-      <version>${version.dialog}</version>
-    </dependency -->
-    <!--  dependency>
-      <groupId>com.google.code.gson</groupId>
-      <artifactId>gson</artifactId>
-      <version>2.8.5</version>
-    </dependency -->
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>apache-jena-libs</artifactId>
@@ -115,7 +98,12 @@
       <version>3.24.0</version>
       <scope>runtime</scope>
     </dependency>
-
+    <!-- dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
+      <scope>test</scope>
+    </dependency -->
     <!-- test scope dependencies -->
     <dependency>
       <groupId>org.springframework.boot</groupId>

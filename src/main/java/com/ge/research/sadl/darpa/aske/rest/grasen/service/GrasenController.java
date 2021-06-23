@@ -1,11 +1,45 @@
+/********************************************************************** 
+ * Note: This license has also been called the "New BSD License" or 
+ * "Modified BSD License". See also the 2-clause BSD License.
+ *
+ * Copyright � 2020-2021 - General Electric Company, All Rights Reserved
+ * 
+ * Projects: GraSEN, developed with the support of the Defense Advanced 
+ * Research Projects Agency (DARPA) under Agreement  No. HR. 
+ *
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions are met:
+ * 1. Redistributions of source code must retain the above copyright notice, 
+ *    this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice, 
+ *    this list of conditions and the following disclaimer in the documentation 
+ *    and/or other materials provided with the distribution.
+ *
+ * 3. Neither the name of the copyright holder nor the names of its 
+ *    contributors may be used to endorse or promote products derived 
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF 
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ ***********************************************************************/
 package com.ge.research.sadl.darpa.aske.rest.grasen.service;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.net.MalformedURLException;
-import java.nio.file.Files;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -14,11 +48,10 @@ import java.util.Map;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Encoding;
+//import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
-import org.apache.jena.ontology.OntModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -27,15 +60,15 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
+//import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.ge.research.sadl.builder.ConfigurationManagerForIdeFactory;
-import com.ge.research.sadl.builder.IConfigurationManagerForIDE;
+//import com.ge.research.sadl.builder.ConfigurationManagerForIdeFactory;
+//import com.ge.research.sadl.builder.IConfigurationManagerForIDE;
 //import com.ge.research.sadl.darpa.aske.curation.AnswerCurationManager;
 //import com.ge.research.sadl.darpa.aske.processing.imports.AnswerExtractionProcessor.CodeLanguage;
 import com.ge.research.sadl.darpa.aske.grfnmodelextractor.GrFNModelExtractor;
@@ -63,29 +96,30 @@ import com.ge.research.sadl.reasoner.ConfigurationException;
  * a temporary directory each time it runs.
  */
 @Controller
-@RequestMapping("/GrFN2SADLservice")
+@RequestMapping("/SemanticAnnotator")
 public class GrasenController {
 
     private static final Logger logger = LoggerFactory.getLogger(GrasenController.class);
 
-//    private String domainProjectModelFolder;
-//    private String grFNExtractionKbRoot;
     private String grFNExtractionProjectModelFolder;
 
     public GrasenController() throws IOException {
         File projectRoot = new File("target/test-classes/GraSEN");
-//        grFNExtractionKbRoot = projectRoot.getCanonicalPath();
         File extractionProjectModelFolder = new File(projectRoot, "OwlModels");
         grFNExtractionProjectModelFolder = extractionProjectModelFolder.getCanonicalPath();
-//        domainProjectModelFolder = grFNExtractionProjectModelFolder;
+//    	String projectRoot = "/GraSEN";
+//        String extractionProjectModelFolder = projectRoot + "/OwlModels";
+//        grFNExtractionProjectModelFolder = extractionProjectModelFolder;
+
     }
 
-    @Operation(summary = "Receive an uploaded JSON file, translate it from JSON to OWL to SADL, and return a SADL file")
+    @Operation(summary = "Receives a GrFN or Expression Tree JSON file and returns a SADL file with a semantic model of the info")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Translated the file",
                          content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE)),
             @ApiResponse(responseCode = "404", description = "Error translating the file",
                          content = @Content) })
+
     @PostMapping(value = "/translate", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseBody
     public ResponseEntity<Resource> translate(@RequestParam("file") MultipartFile file)
@@ -93,9 +127,9 @@ public class GrasenController {
 
         logger.info("Calling translate with filename {}", file.getOriginalFilename());
         String grFNJsonContent = new String(file.getInputStream().readAllBytes());
-        String defaultCodeModelPrefix = "test_grfn_json";
+        String defaultCodeModelPrefix = getModelPrefixFromInputFile(file);
         String defaultCodeModelName = "http://aske.ge.com/" + defaultCodeModelPrefix;
-        String outputOwlFileName = "test_grfn_json.owl";
+        String outputOwlFileName = defaultCodeModelPrefix + ".owl";
 
 		GrFNModelExtractor grfnExtractor = new GrFNModelExtractor();
 		grfnExtractor.setOwlModelsFolder(grFNExtractionProjectModelFolder);
@@ -140,4 +174,21 @@ public class GrasenController {
         }
     }
 
+	/**
+	 * Method to generate a unique model prefix from the input File to the import
+	 * @param inputFile
+	 * @return
+	 */
+	public String getModelPrefixFromInputFile(MultipartFile inputFile) {
+		String prefix;
+		String inputFilename = inputFile.getOriginalFilename();
+		if (inputFilename.endsWith(".json")) {
+			prefix = inputFilename.substring(0, inputFilename.length() - 5);
+		}
+		else {
+			prefix = inputFilename.replaceAll("\\.", "_");
+		}
+		return prefix;
+	}
+    
 }
