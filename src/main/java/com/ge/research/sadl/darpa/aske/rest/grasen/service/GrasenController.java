@@ -35,16 +35,23 @@
  ***********************************************************************/
 package com.ge.research.sadl.darpa.aske.rest.grasen.service;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -54,8 +61,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -103,16 +113,19 @@ public class GrasenController {
 
     private String grFNExtractionProjectModelFolder;
 
+    private String modelsFolderName = "SemanticModels";
+
+    private String tempFolderName = "SATempDir";
+    
     public GrasenController() throws IOException {
-        File projectRoot = new File("target/test-classes/GraSEN");
-        File extractionProjectModelFolder = new File(projectRoot, "OwlModels");
+    	
+    	copyFilesToTmpFolder(modelsFolderName, tempFolderName);
+    	
+        File extractionProjectModelFolder = new File(tempFolderName);
         grFNExtractionProjectModelFolder = extractionProjectModelFolder.getCanonicalPath();
-//    	String projectRoot = "/GraSEN";
-//        String extractionProjectModelFolder = projectRoot + "/OwlModels";
-//        grFNExtractionProjectModelFolder = extractionProjectModelFolder;
-
+    	
     }
-
+    
     @Operation(summary = "Receives a GrFN or Expression Tree JSON file and returns a SADL file with a semantic model of the info")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Translated the file",
@@ -190,5 +203,33 @@ public class GrasenController {
 		}
 		return prefix;
 	}
-    
+
+	/**
+	 * Copy all files from jar folder to a temporary folder.
+	 * @throws IOException
+	 * @throws FileNotFoundException
+	 */
+	private void copyFilesToTmpFolder(String sourceFolder, String tmpFolderName) throws IOException, FileNotFoundException {
+		File tempFolder = new File(tmpFolderName);
+    	if (!tempFolder.exists()) {
+    		tempFolder.mkdir();
+    	}
+
+    	ClassLoader cl = this.getClass().getClassLoader();
+    	PathMatchingResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver(cl);
+    	Resource[] files = resourcePatternResolver.getResources(sourceFolder + File.separator + "*");	
+    	
+    	for(Resource fileRes : files) {
+    		logger.info("Copying file {} to temp folder", fileRes.getFilename());
+  	
+	    	InputStream inStream = fileRes.getInputStream();
+	    	FileOutputStream outStream = new FileOutputStream(new File(tempFolder, fileRes.getFilename()));
+	    	byte[] buffer = new byte[inStream.available()];
+	    	inStream.read(buffer);
+	    	outStream.write(buffer);
+    	}
+	}
+
+
+	
 }

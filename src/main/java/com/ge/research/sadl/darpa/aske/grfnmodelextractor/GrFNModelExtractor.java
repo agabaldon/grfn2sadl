@@ -1122,9 +1122,10 @@ public class GrFNModelExtractor  {
 	
 	
 	public File saveGrFNOwlFile(String outputFilename) throws ConfigurationException, IOException {
-		File of = new File(new File(getOwlModelsFolder()).getParent() + 
-				"/" + EXTRACTED_MODELS_FOLDER_PATH_FRAGMENT + "/" + outputFilename);
-		of.getParentFile().mkdirs();
+		File of = new File(new File(getOwlModelsFolder())
+				//.getParent() + "/" + EXTRACTED_MODELS_FOLDER_PATH_FRAGMENT 
+				+ File.separator + outputFilename);
+		//of.getParentFile().mkdirs();
 		getCodeModelConfigMgr().saveOwlFile(getCurrentCodeModel(), getCodeModelName(), of.getCanonicalPath());
 		String outputOwlFileName = of.getCanonicalPath();			
 		addCodeModel(outputOwlFileName, getCurrentCodeModel());
