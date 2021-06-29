@@ -59,7 +59,8 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.jena.vocabulary.RDFS;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.ge.research.sadl.builder.ConfigurationManagerForIdeFactory;
 import com.ge.research.sadl.builder.IConfigurationManagerForIDE;
@@ -88,7 +89,7 @@ public class GrFNModelExtractor  {
 	public static final String GRFN_EXTRACTION_MODEL_URI = "http://sadl.org/GrFNExtractionModel.sadl";
 	public static final String GRFN_EXTRACTION_MODEL_PREFIX = "grfnem";
 
-    private static final Logger logger = Logger.getLogger (GrFNModelExtractor.class) ;
+	private static final Logger logger = LoggerFactory.getLogger(GrFNModelExtractor.class);
     
 	private String owlModelsFolder;
     

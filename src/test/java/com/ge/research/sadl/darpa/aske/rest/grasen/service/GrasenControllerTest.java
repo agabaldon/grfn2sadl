@@ -2,7 +2,6 @@ package com.ge.research.sadl.darpa.aske.rest.grasen.service;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -11,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
@@ -21,13 +20,23 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 /**
  * Checks that the application's REST endpoint can receive a JSON file
  * and will return a SADL file generated from the JSON file.
+ *
+ * Also checks that the application's REST endpoint has Swagger UI
+ * documentation.
  */
-@WebMvcTest(GrasenController.class)
+@SpringBootTest
 @AutoConfigureMockMvc
 public class GrasenControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Test
+    public void shouldDisplaySwaggerUiPage() throws Exception {
+        mockMvc.perform(get("/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-config"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Swagger")));
+    }
 
     @Test
     public void translateShouldReturnFile() throws Exception {
@@ -117,20 +126,8 @@ public class GrasenControllerTest {
                 + "      \"type\": \"FuncContainer\",\n"
                 + "      \"border_color\": \"forestgreen\",\n"
                 + "      \"nodes\": [\n"
-//                + "        \"b7d6467b-2f5a-522a-f87f-43fdf6062541\",\n"
                 + "        \"f728b4fa-4248-5e3a-0a5d-2f346baa9455\",\n"
-//                + "        \"eb1167b3-67a9-c378-7c65-c1e582e2e662\",\n"
-//                + "        \"f7c1bd87-4da5-e709-d471-3d60c8a70639\",\n"
-//                + "        \"e443df78-9558-867f-5ba9-1faf7a024204\",\n"
-//                + "        \"23a7711a-8133-2876-37eb-dcd9e87a1613\",\n"
-//                + "        \"fcbd04c3-4021-2ef7-cca5-a5a19e4d6e3c\",\n"
-//                + "        \"1846d424-c17c-6279-23c6-612f48268673\",\n"
                 + "        \"ba26d851-35e8-579a-7aaf-0e891fb797fa\"\n"
-//                + "        \"b4862b21-fb97-d435-8856-1712e8e5216a\",\n"
-//                + "        \"ade9b2b4-efdd-35f8-0fa3-4266ccfdba9b\",\n"
-//                + "        \"259f4329-e6f4-590b-9a16-4106cf6a659e\",\n"
-//                + "        \"9edfa3da-6cf5-5b15-8b53-031d05d51433\",\n"
-//                + "        \"11ebcd49-428a-1c22-d5fd-b76a19fbeb1d\"\n"
                 + "      ],\n"
                 + "      \"metadata\": [\n"
                 + "        {\n"
