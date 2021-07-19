@@ -73,6 +73,7 @@ import com.ge.research.sadl.processing.SadlConstants;
 import com.ge.research.sadl.reasoner.CircularDependencyException;
 import com.ge.research.sadl.reasoner.ConfigurationException;
 import com.ge.research.sadl.reasoner.InvalidNameException;
+import com.ge.research.sadl.reasoner.ReasonerNotFoundException;
 import com.ge.research.sadl.reasoner.TranslationException;
 import com.ge.research.sadl.reasoner.IConfigurationManagerForEditing.Scope;
 import com.ge.research.sadl.reasoner.utils.SadlUtils;
@@ -85,9 +86,11 @@ import com.google.gson.Gson;
  */
 public class GrFNModelExtractor  {
 
-	public static final String EXTRACTED_MODELS_FOLDER_PATH_FRAGMENT = "ExtractedModels";
+//	public static final String EXTRACTED_MODELS_FOLDER_PATH_FRAGMENT = "ExtractedModels";
 	public static final String GRFN_EXTRACTION_MODEL_URI = "http://sadl.org/GrFNExtractionModel.sadl";
 	public static final String GRFN_EXTRACTION_MODEL_PREFIX = "grfnem";
+//	public static final String GRFN_EXTRACTION_MODEL_URI = "http://sadl.org/SemAnnotator.sadl";
+//	public static final String GRFN_EXTRACTION_MODEL_PREFIX = "semannotator";
 
 	private static final Logger logger = LoggerFactory.getLogger(GrFNModelExtractor.class);
     
@@ -149,21 +152,59 @@ public class GrFNModelExtractor  {
 	 * content: string with the full content of the file
 	 * modelName: url of the output model name
 	 * modelPrefix
+	 * @throws ReasonerNotFoundException 
 	 */
 //	@Override
 	public boolean process(String inputIdentifier, String content, String modelName, String modelPrefix)
-			throws ConfigurationException, IOException {
+			throws ConfigurationException, IOException, ReasonerNotFoundException {
 	    initializeContent(modelName, modelPrefix);
-//		String defName = getCodeModelName() + "_comments";
-//		getCurationMgr().getTextProcessor().setTextModelName(defName);
-//		String defPrefix = getCodeModelPrefix() + "_cmnt";
-//		getCurationMgr().getTextProcessor().setTextModelPrefix(defPrefix);
 
+//      initializeGrFNModel(getCurationMgr().getOwlModelsFolder());
+	    initializeGrFNModel(getOwlModelsFolder());
 	    
-	    //TODO: replace getCurationMgr().getOwlModelsFolder() with some temp folder in the service
 //		parse(inputIdentifier, getCurationMgr().getOwlModelsFolder(), content);
 		parse(inputIdentifier, getOwlModelsFolder(), content);
 
+		//TODO: invoke the reasoner on the rules.
+		
+//		Reasoner reasoner = getCurrentCodeModel().getReasoner();
+		
+//		final String format = SadlSerializationFormat.RDF_XML_ABBREV_FORMAT;
+//		configMgr = ConfigurationManagerForIdeFactory.getConfigurationManagerForIDE(getOwlModelsFolder(), format);
+////		configMgr.clearReasoner();
+		
+//		Reasoner reasoner = getCurrentCodeModel().getReasoner();
+		
+//		getCodeModelConfigMgr().setReasonerClassName("com.naturalsemanticsllc.sadl.reasoner.JenaAugmentedReasonerPlugin");
+		com.ge.research.sadl.reasoner.IReasoner reasoner = getCodeModelConfigMgr().getReasoner();
+		
+		
+        if (reasoner == null) {
+        	logger.info("Failed to get reasoner");
+        }		
+
+        int iStatus = reasoner.initializeReasoner(getCurrentCodeModel(), getCodeModelName(), null, null);
+        if (iStatus == 0){
+        	logger.info("Got reasoner but initialization returned failed status");
+        } else {
+        	logger.info("Got good reasoner");
+        }
+		
+        boolean deductionsOnly = false;
+		Object infModel = reasoner.getInferredModel(deductionsOnly);
+		if (!(infModel instanceof Model)) {
+			throw new ConfigurationException("The reasoner returned an inferred model of type '" + infModel.getClass().getCanonicalName() + "'; this is not supported by SemanticAnnotator.");
+		}
+
+		Model inferredModel = (Model) infModel;
+		
+		getCurrentCodeModel().add(inferredModel);
+		
+		//reasoner.prepareQuery(modelPrefix)
+		//reasoner.ask
+		//ResultSet has toString or iterator
+		//Can also get the data as 2D array
+		
 		return true;
 	}
 
@@ -175,36 +216,12 @@ public class GrFNModelExtractor  {
 
 	
 	private void parse(String inputIdentifier, String modelFolder, String grFNjsonContent) throws IOException, ConfigurationException {
-
-		//TODO: this try block can be removed for microservice
-//		try {
-//			String source = null;
-//			if (inputIdentifier.lastIndexOf('/') > 0) {
-//				source = inputIdentifier.substring(inputIdentifier.lastIndexOf('/') + 1);
-//			}
-//			else if (inputIdentifier.lastIndexOf('\\') > 0) {
-//				source = inputIdentifier.substring(inputIdentifier.lastIndexOf('\\') + 1);
-//			}
-//			else {
-//				source = inputIdentifier;
-//			}
-//			String msg = "Parsing GrFN Json file '" + source + "'.";
-//			getCurationMgr().notifyUser(modelFolder, msg, true);
-//		} catch (ConfigurationException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-		//**********************************************************
-		
 		if (logger.isDebugEnabled()) {
 			logger.debug("***************** GrFN Json to process ******************");
 			logger.debug(grFNjsonContent);
 			logger.debug("*********************************************************");
 		}
-				
-//        initializeGrFNModel(getCurationMgr().getOwlModelsFolder());
-        initializeGrFNModel(getOwlModelsFolder());
-		
+
 		Gson gson = new Gson();
 		
 		GrFN_Graph gr; //= new GrFN_Graph();
@@ -359,6 +376,10 @@ public class GrFNModelExtractor  {
 					if (el > 0) {
 						mdInst.addLiteral(getLineEndsProperty(), mdEntry.getCode_span().getLine_end());						
 					}
+				}
+				else if (mdEntry.getType().equals("from_source")) {
+					boolean fs = mdEntry.getFrom_source();
+					mdInst.addLiteral(getFromSourceProperty(), fs);
 				}
 			}
 		}
@@ -820,7 +841,7 @@ public class GrFNModelExtractor  {
 		getCurrentCodeModel().setNsPrefix(getCodeModelPrefix(), getCodeModelNamespace());
 		Ontology modelOntology = getCurrentCodeModel().createOntology(getCodeModelName());
 		logger.debug("Ontology '" + getCodeModelName() + "' created");
-		modelOntology.addComment("This ontology was created by extraction from GrFN json by the GraSEN GrFNModelExtractor.", "en");
+		modelOntology.addComment("This ontology was created by extraction from GrFN json by the GraSEN SemanticAnnotator.", "en");
 		setCodeMetaModelUri(GRFN_EXTRACTION_MODEL_URI);
 		setCodeMetaModelPrefix(GRFN_EXTRACTION_MODEL_PREFIX);
 		OntModel importedOntModel = getCodeModelConfigMgr().getOntModel(getCodeMetaModelUri(), Scope.INCLUDEIMPORTS);
@@ -1027,6 +1048,9 @@ public class GrFNModelExtractor  {
 	}
 	private Property getLineEndsProperty() {
 		return getCurrentCodeModel().getOntProperty(getCodeMetaModelUri() + "#line_end");
+	}
+	private Property getFromSourceProperty() {
+		return getCurrentCodeModel().getOntProperty(getCodeMetaModelUri() + "#from_source");
 	}
 
 

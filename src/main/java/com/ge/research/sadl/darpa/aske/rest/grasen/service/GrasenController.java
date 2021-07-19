@@ -68,6 +68,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.ge.research.sadl.darpa.aske.grfnmodelextractor.GrFNModelExtractor;
 import com.ge.research.sadl.reasoner.ConfigurationException;
+import com.ge.research.sadl.reasoner.ReasonerNotFoundException;
 
 /**
  * Receives an uploaded JSON file, translates it from JSON to OWL and
@@ -117,7 +118,7 @@ public class GrasenController {
     @PostMapping(value = "/translate", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseBody
     public ResponseEntity<Resource> translate(@RequestParam("file") MultipartFile file)
-        throws ConfigurationException, FileNotFoundException, IOException {
+        throws ConfigurationException, FileNotFoundException, IOException, ReasonerNotFoundException {
 
         logger.info("Calling translate with filename {}", file.getOriginalFilename());
         String grFNJsonContent = new String(file.getInputStream().readAllBytes());
@@ -131,7 +132,7 @@ public class GrasenController {
         grfnExtractor.setCodeModelName(defaultCodeModelName);
 
         grfnExtractor.process("some grfn file identifier", grFNJsonContent, defaultCodeModelName, defaultCodeModelPrefix);
-
+        
         File of = grfnExtractor.saveGrFNOwlFile(outputOwlFileName);
         Map<File, Integer> outputOwlFilesBySourceType = new HashMap<File, Integer>();
         outputOwlFilesBySourceType.put(of, 2);

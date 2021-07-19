@@ -16,6 +16,7 @@ public class GrFN_Metadata {
 //	@SerializedName(value = "uid", alternate = "func_node_uid")
 	private String type;
 	private CodeSpan code_span;
+	private boolean from_source;
 //	private int[] line; 
 
 	class CodeSpan{
@@ -72,5 +73,11 @@ public class GrFN_Metadata {
 //	public void setLine(int[] line) {
 //		this.line = line;
 //	}
+	public boolean getFrom_source() {
+		return from_source;
+	}
+	public void setFrom_source(boolean from_source) {
+		this.from_source = from_source;
+	}
 
 }
