@@ -166,11 +166,16 @@ public class GrasenControllerTest {
                 MockMvcRequestBuilders.multipart("/SemanticAnnotator/translate")
                                       .file(mockMultipartFile);
 
-        String firstLine = "uri \"http://aske.ge.com/test_grfn\" alias test_grfn";
-        mockMvc.perform(builder)
-            .andDo(print())
-            .andExpect(status().isOk())
-            .andExpect(content().string(containsString(firstLine)));
+        try {
+            String firstLine = "uri \"http://aske.ge.com/test_grfn\" alias test_grfn";
+            mockMvc.perform(builder)
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString(firstLine)));
+        }
+        catch (org.springframework.web.util.NestedServletException e) {
+            e.printStackTrace();
+        }
     }
 
 }
