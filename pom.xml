@@ -106,6 +106,13 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
+      <!-- exclude jakarta.activation-api since we already include jakarta.activation -->
+      <exclusions>
+        <exclusion>
+          <groupId>jakarta.activation</groupId>
+          <artifactId>jakarta.activation-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 
@@ -233,11 +240,6 @@
           <groupId>org.springframework.boot</groupId>
           <artifactId>spring-boot-maven-plugin</artifactId>
           <version>${version.spring.boot}</version>
-          <configuration>
-            <layers>
-              <enabled>true</enabled>
-            </layers>
-          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
