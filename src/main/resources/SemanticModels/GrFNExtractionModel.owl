@@ -16,31 +16,6 @@
     <owl:imports rdf:resource="sadlbasemodel"/>
     <rdfs:comment xml:lang="en">This ontology was created from a SADL file 'GrFNExtractionModel.sadl' and should not be directly edited.</rdfs:comment>
   </owl:Ontology>
-  <owl:Class rdf:ID="Type">
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#long"
-        >1</owl:qualifiedCardinality>
-        <owl:onProperty>
-          <owl:DatatypeProperty rdf:ID="metatype"/>
-        </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#long"
-        >1</owl:qualifiedCardinality>
-        <owl:onProperty>
-          <owl:DatatypeProperty rdf:ID="name"/>
-        </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Class rdf:ID="Node"/>
-    </rdfs:subClassOf>
-  </owl:Class>
   <owl:Class rdf:ID="ExpNode">
     <rdfs:subClassOf>
       <owl:Restriction>
@@ -73,7 +48,7 @@
       </owl:Restriction>
     </rdfs:subClassOf>
     <rdfs:subClassOf>
-      <owl:Class rdf:about="#Node"/>
+      <owl:Class rdf:ID="Node"/>
     </rdfs:subClassOf>
   </owl:Class>
   <owl:Class rdf:ID="Variable">
@@ -156,7 +131,7 @@
         <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#long"
         >1</owl:qualifiedCardinality>
         <owl:onProperty>
-          <owl:DatatypeProperty rdf:about="#name"/>
+          <owl:DatatypeProperty rdf:ID="name"/>
         </owl:onProperty>
       </owl:Restriction>
     </rdfs:subClassOf>
@@ -242,11 +217,56 @@
     </rdfs:subClassOf>
     <rdfs:subClassOf>
       <owl:Restriction>
-        <owl:allValuesFrom rdf:resource="#ExpNode"/>
+        <owl:allValuesFrom rdf:resource="#Variable"/>
         <owl:onProperty rdf:resource="sadllistmodel#first"/>
       </owl:Restriction>
     </rdfs:subClassOf>
     <rdfs:subClassOf rdf:resource="sadllistmodel#List"/>
+  </owl:Class>
+  <owl:Class rdf:about="#ExpressionTree">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Node"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="GrFN">
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
+        <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#long"
+        >1</owl:qualifiedCardinality>
+        <owl:onProperty>
+          <owl:DatatypeProperty rdf:ID="date_created"/>
+        </owl:onProperty>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Node"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Type">
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#long"
+        >1</owl:qualifiedCardinality>
+        <owl:onProperty>
+          <owl:DatatypeProperty rdf:ID="metatype"/>
+        </owl:onProperty>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#long"
+        >1</owl:qualifiedCardinality>
+        <owl:onProperty>
+          <owl:DatatypeProperty rdf:about="#name"/>
+        </owl:onProperty>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Node"/>
+    </rdfs:subClassOf>
   </owl:Class>
   <owl:Class rdf:ID="Metadata">
     <rdfs:subClassOf>
@@ -280,10 +300,20 @@
       </owl:Restriction>
     </rdfs:subClassOf>
   </owl:Class>
-  <owl:Class rdf:about="#ExpressionTree">
+  <owl:Class rdf:nodeID="A1">
     <rdfs:subClassOf>
-      <owl:Class rdf:about="#Node"/>
+      <owl:Restriction>
+        <owl:allValuesFrom rdf:nodeID="A1"/>
+        <owl:onProperty rdf:resource="sadllistmodel#rest"/>
+      </owl:Restriction>
     </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:allValuesFrom rdf:resource="#ExpNode"/>
+        <owl:onProperty rdf:resource="sadllistmodel#first"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf rdf:resource="sadllistmodel#List"/>
   </owl:Class>
   <owl:Class rdf:ID="HyperEdge">
     <rdfs:subClassOf>
@@ -293,21 +323,6 @@
         >1</owl:qualifiedCardinality>
         <owl:onProperty>
           <owl:ObjectProperty rdf:ID="function"/>
-        </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Class rdf:about="#Node"/>
-    </rdfs:subClassOf>
-  </owl:Class>
-  <owl:Class rdf:ID="GrFN">
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
-        <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#long"
-        >1</owl:qualifiedCardinality>
-        <owl:onProperty>
-          <owl:DatatypeProperty rdf:ID="date_created"/>
         </owl:onProperty>
       </owl:Restriction>
     </rdfs:subClassOf>
@@ -365,6 +380,10 @@
     <rdfs:domain rdf:resource="#HyperEdge"/>
     <rdfs:range rdf:resource="#Variable"/>
   </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="outputList">
+    <rdfs:domain rdf:resource="#HyperEdge"/>
+    <rdfs:range rdf:nodeID="A0"/>
+  </owl:ObjectProperty>
   <owl:ObjectProperty rdf:about="#metadata">
     <rdfs:domain rdf:resource="#Node"/>
     <rdfs:range rdf:resource="#Metadata"/>
@@ -412,9 +431,13 @@
       </owl:Class>
     </rdfs:range>
   </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="inputList">
+    <rdfs:domain rdf:resource="#HyperEdge"/>
+    <rdfs:range rdf:nodeID="A0"/>
+  </owl:ObjectProperty>
   <owl:ObjectProperty rdf:ID="children">
     <rdfs:domain rdf:resource="#ExpNode"/>
-    <rdfs:range rdf:nodeID="A0"/>
+    <rdfs:range rdf:nodeID="A1"/>
   </owl:ObjectProperty>
   <owl:ObjectProperty rdf:ID="outputs">
     <rdfs:domain rdf:resource="#HyperEdge"/>
@@ -495,16 +518,16 @@
     <rdfs:domain rdf:resource="#ExpNode"/>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
   </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:about="#var_name">
+    <rdfs:domain rdf:resource="#ExpNode"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="#uid">
     <rdfs:domain rdf:resource="#Node"/>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="#scope">
     <rdfs:domain rdf:resource="#SubGraph"/>
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-  </owl:DatatypeProperty>
-  <owl:DatatypeProperty rdf:about="#var_name">
-    <rdfs:domain rdf:resource="#ExpNode"/>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="#identifier">

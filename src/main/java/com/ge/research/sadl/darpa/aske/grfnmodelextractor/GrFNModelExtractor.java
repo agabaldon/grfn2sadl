@@ -525,7 +525,7 @@ public class GrFNModelExtractor  {
 	}
 
 	private void processEdge(Individual grfnInst, GrFN_Hyperedge edge) {
-		//TODO: am I missing 
+		//TODO: 
 		Individual edgeInst = createNewEdge();
 		grfnInst.addProperty(getEdgesProperty(), edgeInst);
 		String fuid = edge.getFunction();
@@ -533,14 +533,55 @@ public class GrFNModelExtractor  {
 		List<String> outputs = edge.getOutputs();
 		Individual fnInst = getOrCreateFunction(fuid);
 		edgeInst.addProperty(getEdgeFunctionProperty(), fnInst);
-		for (String inp : inputs) {
-			Individual inpInst = getOrCreateVariable(inp);
-			edgeInst.addProperty(getEdgeInputProperty(), inpInst);
+		
+		List<Individual> inputInstances = new ArrayList<Individual>();
+		if(inputs != null) {
+			for (String in : inputs) {
+				//child may be a variable or an operator. In either case, it is an Node
+				Individual inInst = getOrCreateVariable(in);
+				inputInstances.add(inInst);
+				edgeInst.addProperty(getEdgeInputProperty(), inInst);
+			}
+			if (inputInstances.size() > 0) {
+				try {
+					Individual typedList = addMembersToList(getCurrentCodeModel(), null, getEdgeInputsListClass(), getVariableClass(), inputInstances.iterator());
+					edgeInst.addProperty(getEdgeInputListProperty(), typedList);
+				} catch (JenaProcessorException e) {
+					e.printStackTrace();
+				} catch (TranslationException e) {
+					e.printStackTrace();
+				}
+			}
 		}
-		for (String outp : outputs) {
-			Individual outpInst = getOrCreateVariable(outp);
-			edgeInst.addProperty(getEdgeOutputProperty(), outpInst);
+
+		List<Individual> outputInstances = new ArrayList<Individual>();
+		if(outputs != null) {
+			for (String out : outputs) {
+				//child may be a variable or an operator. In either case, it is an Node
+				Individual outInst = getOrCreateVariable(out);
+				outputInstances.add(outInst);
+				edgeInst.addProperty(getEdgeOutputProperty(), outInst);
+			}
+			if (outputInstances.size() > 0) {
+				try {
+					Individual typedList = addMembersToList(getCurrentCodeModel(), null, getEdgeOutputsListClass(), getVariableClass(), outputInstances.iterator());
+					edgeInst.addProperty(getEdgeOutputListProperty(), typedList);
+				} catch (JenaProcessorException e) {
+					e.printStackTrace();
+				} catch (TranslationException e) {
+					e.printStackTrace();
+				}
+			}
 		}
+
+//		for (String inp : inputs) {
+//			Individual inpInst = getOrCreateVariable(inp);
+//			edgeInst.addProperty(getEdgeInputProperty(), inpInst);
+//		}
+//		for (String outp : outputs) {
+//			Individual outpInst = getOrCreateVariable(outp);
+//			edgeInst.addProperty(getEdgeOutputProperty(), outpInst);
+//		}
 	}
 
 
@@ -983,9 +1024,39 @@ public class GrFNModelExtractor  {
 	private Property getEdgeInputProperty() {
 		return getCurrentCodeModel().getOntProperty(getCodeMetaModelUri() + "#inputs");
 	}
+	private Property getEdgeInputListProperty() {
+		return getCurrentCodeModel().getOntProperty(getCodeMetaModelUri() + "#inputList");
+	}
+	private OntClass getEdgeInputsListClass() {
+		Property inputsProp = getEdgeInputListProperty();
+		StmtIterator stmtItr = getCurrentCodeModel().listStatements(inputsProp, RDFS.range, (RDFNode)null);
+		if (stmtItr.hasNext()) {
+			RDFNode rng = stmtItr.nextStatement().getObject();
+			if (rng.asResource().canAs(OntClass.class)) {
+				return rng.asResource().as(OntClass.class);
+			}
+		}
+		return null;
+	}
+	
 	private Property getEdgeOutputProperty() {
 		return getCurrentCodeModel().getOntProperty(getCodeMetaModelUri() + "#outputs");
 	}
+	private Property getEdgeOutputListProperty() {
+		return getCurrentCodeModel().getOntProperty(getCodeMetaModelUri() + "#outputList");
+	}
+	private OntClass getEdgeOutputsListClass() {
+		Property outputsProp = getEdgeOutputListProperty();
+		StmtIterator stmtItr = getCurrentCodeModel().listStatements(outputsProp, RDFS.range, (RDFNode)null);
+		if (stmtItr.hasNext()) {
+			RDFNode rng = stmtItr.nextStatement().getObject();
+			if (rng.asResource().canAs(OntClass.class)) {
+				return rng.asResource().as(OntClass.class);
+			}
+		}
+		return null;
+	}
+
 	private Property getEdgesProperty() {
 		return getCurrentCodeModel().getOntProperty(getCodeMetaModelUri() + "#hyper_edges");
 	}
