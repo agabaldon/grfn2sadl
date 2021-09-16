@@ -76,6 +76,7 @@ import com.ge.research.sadl.reasoner.InvalidNameException;
 import com.ge.research.sadl.reasoner.ReasonerNotFoundException;
 import com.ge.research.sadl.reasoner.TranslationException;
 import com.ge.research.sadl.reasoner.IConfigurationManagerForEditing.Scope;
+import com.ge.research.sadl.reasoner.IReasoner;
 import com.ge.research.sadl.reasoner.utils.SadlUtils;
 import com.google.gson.Gson;
 
@@ -171,24 +172,30 @@ public class GrFNModelExtractor  {
 		
 //		final String format = SadlSerializationFormat.RDF_XML_ABBREV_FORMAT;
 //		configMgr = ConfigurationManagerForIdeFactory.getConfigurationManagerForIDE(getOwlModelsFolder(), format);
-////		configMgr.clearReasoner();
+//		configMgr.clearReasoner();
 		
 //		Reasoner reasoner = getCurrentCodeModel().getReasoner();
 		
 //		getCodeModelConfigMgr().setReasonerClassName("com.naturalsemanticsllc.sadl.reasoner.JenaAugmentedReasonerPlugin");
-		com.ge.research.sadl.reasoner.IReasoner reasoner = getCodeModelConfigMgr().getReasoner();
-		
-		
-        if (reasoner == null) {
-        	logger.info("Failed to get reasoner");
-        }		
 
-        int iStatus = reasoner.initializeReasoner(getCurrentCodeModel(), getCodeModelName(), null, null);
-        if (iStatus == 0){
-        	logger.info("Got reasoner but initialization returned failed status");
-        } else {
-        	logger.info("Got good reasoner");
-        }
+
+//		//TODO: working on this
+		
+		IReasoner reasoner = getCodeModelConfigMgr().getReasoner();
+//      if (reasoner == null) {
+//    	logger.info("Failed to get reasoner");
+//    }		
+//
+		if (!reasoner.isInitialized()) {
+			reasoner.setConfigurationManager(getCodeModelConfigMgr());
+			reasoner.initializeReasoner(getCodeModelConfigMgr().getModelFolder(), getCodeModelName(), null);
+		}
+//        int iStatus = reasoner.initializeReasoner(getCurrentCodeModel(), getCodeModelName(), null, null);
+//        if (iStatus == 0){
+//        	logger.info("Got reasoner but initialization returned failed status");
+//        } else {
+//        	logger.info("Got good reasoner");
+//        }
 		
         boolean deductionsOnly = false;
 		Object infModel = reasoner.getInferredModel(deductionsOnly);
