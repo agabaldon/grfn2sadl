@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.5.0</version>
+    <version>2.5.4</version>
     <relativePath></relativePath>
   </parent>
 
@@ -18,9 +18,13 @@
 
   <!-- Set properties -->
   <properties>
-    <java.version>11</java.version>
+    <maven.compiler.release>11</maven.compiler.release>
     <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
     <maven.compiler.showWarnings>true</maven.compiler.showWarnings>
+    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <version.dialog>1.1.0-SNAPSHOT</version.dialog>
     <version.jena>3.17.0</version.jena>
     <version.sadl>3.5.0-SNAPSHOT</version.sadl>
@@ -95,6 +99,12 @@
 
     <!-- runtime scope dependencies -->
     <dependency>
+      <groupId>com.sun.activation</groupId>
+      <artifactId>jakarta.activation</artifactId>
+      <version>2.0.1</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
       <groupId>org.eclipse.jdt</groupId>
       <artifactId>org.eclipse.jdt.core</artifactId>
       <version>3.24.0</version>
@@ -106,13 +116,6 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
-      <!-- exclude jakarta.activation-api since we already include jakarta.activation -->
-      <exclusions>
-        <exclusion>
-          <groupId>jakarta.activation</groupId>
-          <artifactId>jakarta.activation-api</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
   </dependencies>
 
@@ -162,7 +165,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
-          <version>3.1.2</version>
+          <version>3.2.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -172,7 +175,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-enforcer-plugin</artifactId>
-          <version>3.0.0-M3</version>
+          <version>3.0.0</version>
           <configuration>
             <rules>
               <requireMavenVersion>
