@@ -43,6 +43,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,8 +68,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ge.research.sadl.darpa.aske.grfnmodelextractor.GrFNModelExtractor;
+import com.ge.research.sadl.owl2sadl.OwlImportException;
+import com.ge.research.sadl.reasoner.AmbiguousNameException;
 import com.ge.research.sadl.reasoner.ConfigurationException;
+import com.ge.research.sadl.reasoner.InvalidNameException;
+import com.ge.research.sadl.reasoner.QueryCancelledException;
+import com.ge.research.sadl.reasoner.QueryParseException;
 import com.ge.research.sadl.reasoner.ReasonerNotFoundException;
+import com.ge.research.sadl.reasoner.TranslationException;
 
 /**
  * Receives an uploaded JSON file, translates it from JSON to OWL and
@@ -91,7 +98,7 @@ import com.ge.research.sadl.reasoner.ReasonerNotFoundException;
  * time it runs.
  */
 @Controller
-@RequestMapping("/SemanticAnnotator")
+@RequestMapping("/SemanticAnalysis")
 public class GrasenController {
 
     private static final Logger logger = LoggerFactory.getLogger(GrasenController.class);
@@ -109,49 +116,159 @@ public class GrasenController {
         grFNExtractionProjectModelFolder = extractionProjectModelFolder.getCanonicalPath();
     }
 
-    @Operation(summary = "Receives a GrFN or Expression Tree JSON file and returns a SADL file with a semantic model of the info")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Translated the file",
-                         content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE)),
-            @ApiResponse(responseCode = "404", description = "Error translating the file",
-                         content = @Content) })
-    @PostMapping(value = "/translate", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @ResponseBody
-    public ResponseEntity<Resource> translate(@RequestParam("file") MultipartFile file)
-        throws ConfigurationException, FileNotFoundException, IOException, ReasonerNotFoundException {
+//    @Operation(summary = "Receives a GrFN+ExpressionTree JSON file and returns a Semantic Analysis model in SADL")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "Semantic Analysis done",
+//                         content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE)),
+//            @ApiResponse(responseCode = "404", description = "Error in Semantic Analysis",
+//                         content = @Content) })
+//    @PostMapping(value = "/semanticAnalysis", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+//    @ResponseBody
+//    public ResponseEntity<Resource> translate(@RequestParam("file") MultipartFile file)
+//        throws ConfigurationException, FileNotFoundException, IOException, ReasonerNotFoundException, TranslationException, QueryParseException, QueryCancelledException, InvalidNameException, AmbiguousNameException, OwlImportException {
+//
+////        List<String> sadlFilenames = semanticAnalysis(file);
+//        String sadlFilename = semanticAnalysis(file);
+//        
+//        for (String filename : sadlFilenames) {
+//            Resource resource = loadAsResource(filename);
+//            logger.info("Returning filename {}", resource.getFilename());
+//            return ResponseEntity.ok()
+//                .contentType(MediaType.TEXT_PLAIN)
+//                .header(HttpHeaders.CONTENT_DISPOSITION,
+//                        "attachment; filename=\"" + resource.getFilename() + "\"")
+//                .body(resource);
+//        }
+//
+//        logger.error("No file returned after translation");
+//        return ResponseEntity.notFound().build();
+//    }
 
-        logger.info("Calling translate with filename {}", file.getOriginalFilename());
+    @Operation(summary = "Receives a GrFN+ExpressionTree JSON file and returns a CSV with Semanic Analysis results")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Semantic Analysis done",
+                         content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE)),
+            @ApiResponse(responseCode = "404", description = "Error in Semantic Analysis",
+                         content = @Content) })
+    @PostMapping(value = "/queryService", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseBody
+    public ResponseEntity<Resource> querySemAnalysis(@RequestParam("file") MultipartFile file)
+        throws ConfigurationException, FileNotFoundException, IOException, ReasonerNotFoundException, TranslationException, QueryParseException, QueryCancelledException, InvalidNameException, AmbiguousNameException, OwlImportException {
+
+        String sadlFilename = querySemanticAnalysis(file);
+
+        if (sadlFilename == null) {
+            logger.error("No file returned by Semantic Analysis");
+            return ResponseEntity.notFound().build();
+        }
+        
+        Resource resource = loadAsResource(sadlFilename);
+        logger.info("Returning filename {}", resource.getFilename());
+        return ResponseEntity.ok()
+                .contentType(MediaType.TEXT_PLAIN)
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
+
+        
+//        for (String filename : sadlFilenames) {
+//            Resource resource = loadAsResource(filename);
+//            logger.info("Returning filename {}", resource.getFilename());
+//            return ResponseEntity.ok()
+//                .contentType(MediaType.TEXT_PLAIN)
+//                .header(HttpHeaders.CONTENT_DISPOSITION,
+//                        "attachment; filename=\"" + resource.getFilename() + "\"")
+//                .body(resource);
+//        }
+
+    }
+
+    
+    
+    @Operation(summary = "Receives a GrFN+ExpressionTree JSON file and returns a Semantic Analysis model in SADL and a CSV file")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Semantic Analysis done",
+                         content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE)),
+            @ApiResponse(responseCode = "404", description = "Error in Semantic Analysis",
+                         content = @Content) })
+    @PostMapping(value = "/generateModel", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseBody
+    public ResponseEntity<Resource> semanticAnalysisCSV(@RequestParam("file") MultipartFile file)
+        throws ConfigurationException, FileNotFoundException, IOException, ReasonerNotFoundException, TranslationException, QueryParseException, QueryCancelledException, InvalidNameException, AmbiguousNameException, OwlImportException {
+
+        String sadlFilename = semanticAnalysis(file);
+        if (sadlFilename == null) {
+            logger.error("No file returned by Semantic Analysis");
+            return ResponseEntity.notFound().build();
+        }
+        
+        Resource resource = loadAsResource(sadlFilename);
+        logger.info("Returning filename {}", resource.getFilename());
+        return ResponseEntity.ok()
+                .contentType(MediaType.TEXT_PLAIN)
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
+    }
+
+    
+	private String semanticAnalysis(MultipartFile file) throws IOException, ConfigurationException,
+			ReasonerNotFoundException, TranslationException, QueryParseException, QueryCancelledException,
+			InvalidNameException, AmbiguousNameException, OwlImportException {
+		
+		logger.info("Calling semantic analysis with filename {}", file.getOriginalFilename());
         String grFNJsonContent = new String(file.getInputStream().readAllBytes());
         String defaultCodeModelPrefix = getModelPrefixFromInputFile(file);
-        String defaultCodeModelName = "http://aske.ge.com/" + defaultCodeModelPrefix;
-        String outputOwlFileName = defaultCodeModelPrefix + ".owl";
+        String defaultCodeModelName = "http://grasen.ge.com/" + defaultCodeModelPrefix;
+        String outputOwlFileName = defaultCodeModelPrefix; // + ".owl"
 
         GrFNModelExtractor grfnExtractor = new GrFNModelExtractor();
         grfnExtractor.setOwlModelsFolder(grFNExtractionProjectModelFolder);
         grfnExtractor.setCodeModelPrefix(defaultCodeModelPrefix);
         grfnExtractor.setCodeModelName(defaultCodeModelName);
 
-        grfnExtractor.process("some grfn file identifier", grFNJsonContent, defaultCodeModelName, defaultCodeModelPrefix);
+        grfnExtractor.process("some grfn file identifier", grFNJsonContent, defaultCodeModelName, defaultCodeModelPrefix, false);
         
-        File of = grfnExtractor.saveGrFNOwlFile(outputOwlFileName);
+        File of = grfnExtractor.saveAsOwlFile(outputOwlFileName);
         Map<File, Integer> outputOwlFilesBySourceType = new HashMap<File, Integer>();
         outputOwlFilesBySourceType.put(of, 2);
+        
         List<String> sadlFilenames = grfnExtractor.saveAsSadlFile(outputOwlFilesBySourceType, "yes");
 
-        for (String filename : sadlFilenames) {
-            Resource resource = loadAsResource(filename);
-            logger.info("Returning filename {}", resource.getFilename());
-            return ResponseEntity.ok()
-                .contentType(MediaType.TEXT_PLAIN)
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"" + resource.getFilename() + "\"")
-                .body(resource);
-        }
+//        String csvFileName = grfnExtractor.writeResultsToFile(file.getOriginalFilename().replace("json", "csv"));
+//        sadlFilenames.add(csvFileName);
+		return sadlFilenames.get(0);
+	}
 
-        logger.error("No file returned after translation");
-        return ResponseEntity.notFound().build();
-    }
+	private String querySemanticAnalysis(MultipartFile file) throws IOException, ConfigurationException,
+	ReasonerNotFoundException, TranslationException, QueryParseException, QueryCancelledException,
+	InvalidNameException, AmbiguousNameException, OwlImportException {
 
+		logger.info("Calling semantic analysis with filename {}", file.getOriginalFilename());
+		String grFNJsonContent = new String(file.getInputStream().readAllBytes());
+		String defaultCodeModelPrefix = getModelPrefixFromInputFile(file);
+		String defaultCodeModelName = "http://grasen.ge.com/" + defaultCodeModelPrefix;
+//		String outputOwlFileName = defaultCodeModelPrefix + ".owl";
+		
+		GrFNModelExtractor grfnExtractor = new GrFNModelExtractor();
+		grfnExtractor.setOwlModelsFolder(grFNExtractionProjectModelFolder);
+		grfnExtractor.setCodeModelPrefix(defaultCodeModelPrefix);
+		grfnExtractor.setCodeModelName(defaultCodeModelName);
+		
+		grfnExtractor.process("some grfn file identifier", grFNJsonContent, defaultCodeModelName, defaultCodeModelPrefix, true);
+		
+//		File of = grfnExtractor.saveAsOwlFile(outputOwlFileName);
+//		Map<File, Integer> outputOwlFilesBySourceType = new HashMap<File, Integer>();
+//		outputOwlFilesBySourceType.put(of, 2);
+		
+//		List<String> sadlFilenames = grfnExtractor.saveAsSadlFile(outputOwlFilesBySourceType, "yes");
+		
+		String csvFileName = grfnExtractor.writeResultsToFile(file.getOriginalFilename().replace("json", "csv"));
+//		sadlFilenames.add(csvFileName);
+//		return sadlFilenames;
+		return csvFileName;
+	}
+	
     private Resource loadAsResource(String filename) throws FileNotFoundException {
         try {
             Path file = Paths.get(filename);

@@ -3,7 +3,7 @@
  */
 package com.ge.research.sadl.darpa.aske.grfnmodelextractor;
 
-import com.google.gson.annotations.SerializedName;
+//import com.google.gson.annotations.SerializedName;
 
 /**
  * @author alfredo
