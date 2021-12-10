@@ -78,6 +78,7 @@
       <version>${version.jena}</version>
       <type>pom</type>
     </dependency>
+
     <dependency>
       <groupId>org.eclipse.xtext</groupId>
       <artifactId>org.eclipse.xtext</artifactId>

@@ -12,10 +12,30 @@
   <owl:Ontology rdf:about="">
     <rdfs:comment xml:lang="en">This ontology was created from a SADL file 'GrFNExtractionModel.sadl' and should not be directly edited.</rdfs:comment>
   </owl:Ontology>
-  <owl:Class rdf:ID="ExpNode">
+  <owl:Class rdf:ID="Type">
     <rdfs:subClassOf>
       <owl:Class rdf:ID="Node"/>
     </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:nodeID="A0">
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:allValuesFrom rdf:nodeID="A0"/>
+        <owl:onProperty rdf:resource="sadllistmodel#rest"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:allValuesFrom>
+          <owl:Class rdf:ID="ExpNode"/>
+        </owl:allValuesFrom>
+        <owl:onProperty rdf:resource="sadllistmodel#first"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf rdf:resource="sadllistmodel#List"/>
+  </owl:Class>
+  <owl:Class rdf:about="#ExpNode">
+    <rdfs:subClassOf rdf:resource="#Node"/>
   </owl:Class>
   <owl:Class rdf:ID="Variable">
     <rdfs:subClassOf rdf:resource="#ExpNode"/>
@@ -27,19 +47,14 @@
     <rdfs:subClassOf rdf:resource="#Node"/>
   </owl:Class>
   <owl:Class rdf:ID="Field"/>
-  <owl:Class rdf:ID="ExpressionTree">
+  <owl:Class rdf:ID="Metadata"/>
+  <owl:Class rdf:ID="HyperEdge">
     <rdfs:subClassOf rdf:resource="#Node"/>
   </owl:Class>
-  <owl:Class rdf:ID="GrFN">
-    <rdfs:subClassOf rdf:resource="#Node"/>
-  </owl:Class>
-  <owl:Class rdf:ID="Type">
-    <rdfs:subClassOf rdf:resource="#Node"/>
-  </owl:Class>
-  <owl:Class rdf:nodeID="A0">
+  <owl:Class rdf:nodeID="A1">
     <rdfs:subClassOf>
       <owl:Restriction>
-        <owl:allValuesFrom rdf:nodeID="A0"/>
+        <owl:allValuesFrom rdf:nodeID="A1"/>
         <owl:onProperty rdf:resource="sadllistmodel#rest"/>
       </owl:Restriction>
     </rdfs:subClassOf>
@@ -51,23 +66,7 @@
     </rdfs:subClassOf>
     <rdfs:subClassOf rdf:resource="sadllistmodel#List"/>
   </owl:Class>
-  <owl:Class rdf:nodeID="A1">
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:allValuesFrom rdf:nodeID="A1"/>
-        <owl:onProperty rdf:resource="sadllistmodel#rest"/>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:allValuesFrom rdf:resource="#ExpNode"/>
-        <owl:onProperty rdf:resource="sadllistmodel#first"/>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf rdf:resource="sadllistmodel#List"/>
-  </owl:Class>
-  <owl:Class rdf:ID="Metadata"/>
-  <owl:Class rdf:ID="HyperEdge">
+  <owl:Class rdf:ID="GrFN">
     <rdfs:subClassOf rdf:resource="#Node"/>
   </owl:Class>
   <owl:ObjectProperty rdf:ID="subgraphs">
@@ -80,7 +79,7 @@
   </owl:ObjectProperty>
   <owl:ObjectProperty rdf:ID="outputList">
     <rdfs:domain rdf:resource="#HyperEdge"/>
-    <rdfs:range rdf:nodeID="A0"/>
+    <rdfs:range rdf:nodeID="A1"/>
   </owl:ObjectProperty>
   <owl:ObjectProperty rdf:ID="metadata">
     <rdfs:domain rdf:resource="#Node"/>
@@ -110,8 +109,8 @@
     <rdfs:domain>
       <owl:Class>
         <owl:unionOf rdf:parseType="Collection">
+          <owl:Class rdf:about="#Function"/>
           <owl:Class rdf:about="#SubGraph"/>
-          <owl:Class rdf:about="#ExpressionTree"/>
         </owl:unionOf>
       </owl:Class>
     </rdfs:domain>
@@ -127,11 +126,11 @@
   </owl:ObjectProperty>
   <owl:ObjectProperty rdf:ID="inputList">
     <rdfs:domain rdf:resource="#HyperEdge"/>
-    <rdfs:range rdf:nodeID="A0"/>
+    <rdfs:range rdf:nodeID="A1"/>
   </owl:ObjectProperty>
   <owl:ObjectProperty rdf:ID="children">
     <rdfs:domain rdf:resource="#ExpNode"/>
-    <rdfs:range rdf:nodeID="A1"/>
+    <rdfs:range rdf:nodeID="A0"/>
   </owl:ObjectProperty>
   <owl:ObjectProperty rdf:ID="outputs">
     <rdfs:domain rdf:resource="#HyperEdge"/>

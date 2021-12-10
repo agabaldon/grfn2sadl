@@ -1008,15 +1008,36 @@ public class GrasenControllerTest {
 //                MediaType.APPLICATION_JSON_VALUE, PI_json.getBytes());
 
         MockHttpServletRequestBuilder builder =
+                MockMvcRequestBuilders.multipart("/SemanticAnalysis/generateBaseModel")
+                                      .file(mockMultipartFile);
+
+        try {
+//            String firstLine = "uri \"http://grasen.ge.com/simple_stmts\" alias simple_stmts"; //"uri \"http://aske.ge.com/test_grfn\" alias test_grfn";
+            mockMvc.perform(builder)
+//                .andDo(print())
+                .andExpect(status().isOk())
+//                .andExpect(content().string(containsString(firstLine)))
+                ;
+        }
+        catch (org.springframework.web.util.NestedServletException e) {
+            e.printStackTrace();
+        }
+
+        filename = "test_grfn.json";
+        mockMultipartFile = new MockMultipartFile("file", filename,
+                MediaType.APPLICATION_JSON_VALUE, jsonContent.getBytes());
+        
+         builder =
                 MockMvcRequestBuilders.multipart("/SemanticAnalysis/queryService")
                                       .file(mockMultipartFile);
 
         try {
-            String firstLine = ""; //"uri \"http://grasen.ge.com/simple_stmts\" alias simple_stmts"; //"uri \"http://aske.ge.com/test_grfn\" alias test_grfn";
+//            String firstLine = ""; //"uri \"http://grasen.ge.com/simple_stmts\" alias simple_stmts"; //"uri \"http://aske.ge.com/test_grfn\" alias test_grfn";
             mockMvc.perform(builder)
 //                .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString(firstLine)));
+//                .andExpect(content().string(containsString(firstLine)))
+                ;
         }
         catch (org.springframework.web.util.NestedServletException e) {
             e.printStackTrace();

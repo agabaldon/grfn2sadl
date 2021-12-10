@@ -94,7 +94,7 @@ public class GrFNModelExtractor  {
 
 //	public static final String EXTRACTED_MODELS_FOLDER_PATH_FRAGMENT = "ExtractedModels";
 	public static final String GRFN_EXTRACTION_MODEL_URI = "http://sadl.org/GrFNExtractionModel.sadl";
-//	public static final String GRFN_EXTRACTION_MODEL_PREFIX = "grfnem";
+	public static final String GRFN_EXTRACTION_MODEL_PREFIX = "grfnem";
 	public static final String SEMANNOTATOR_MODEL_URI = "http://sadl.org/SemAnnotator.sadl";
 //	public static final String SEMANNOTATOR_MODEL_PREFIX = "semannotator";
 
@@ -110,7 +110,7 @@ public class GrFNModelExtractor  {
 	private IConfigurationManagerForIDE grFNExtractionModelConfigMgr;	// the ConfigurationManager used to access the grFN extraction model
 	private String grFNExtractionModelUri;	// the name of the grFN extraction model
 
-//	private String grFNExtractionModelPrefix;	// the prefix of the grFN extraction model
+	private String grFNExtractionModelPrefix;	// the prefix of the grFN extraction model
 
 	private OntModel codeModel;  //The model being created
 	private Map<String,OntModel> codeModels = null;
@@ -205,7 +205,8 @@ public class GrFNModelExtractor  {
     		//use buffering
     		//FileWriter always assumes default encoding is OK!
     		output = new BufferedWriter( new FileWriter(csvf) );
-    		output.write(queryResults.toString());
+    		if(queryResults != null)
+    			output.write(queryResults.toString());
     	}
     	finally {
     		//flush and close both "output" and its underlying FileWriter
@@ -245,10 +246,15 @@ public class GrFNModelExtractor  {
 	 * @throws InvalidNameException 
 	 */
 //	@Override
-	public boolean process(String inputIdentifier, String content, String modelName, String modelPrefix, boolean onlyQueryModel)
+	public boolean process(String inputIdentifier, String content, String modelName, String modelPrefix, int requestType)
 			throws ConfigurationException, IOException, ReasonerNotFoundException, TranslationException, QueryParseException, QueryCancelledException, InvalidNameException, AmbiguousNameException {
-	    initializeContent(modelName, modelPrefix);
 
+		initializeContent(modelName, modelPrefix);
+
+//	    if (getCodeModelConfigMgr() != null) {
+//			getCodeModelConfigMgr().clearReasoner(); //nulls reasoner and translator
+//	    }
+	    
 //      initializeGrFNModel(getCurationMgr().getOwlModelsFolder());
 	    initializeGrFNModel(getOwlModelsFolder());
 	    
@@ -271,60 +277,72 @@ public class GrFNModelExtractor  {
 
 
 //		//TODO: working on this
-		
-		IReasoner reasoner = getCodeModelConfigMgr().getReasoner();
 
-		if (!reasoner.isInitialized()) {
-			reasoner.setConfigurationManager(getCodeModelConfigMgr());
-			List preferences = new ArrayList();
-			String[] catHier = new String[1];
-			catHier[0] = reasoner.getReasonerFamily();
-			ConfigurationItem ci = new ConfigurationItem(catHier);
-			ci.addNameValuePair(ci.new NameValuePair("pDerivationLogging", "Shallow")); // could also be "Deep"
-			preferences.add(ci);
-			reasoner.initializeReasoner(getCurrentCodeModel(), getCodeModelName(), null, preferences, getCodeModelConfigMgr().getRepoType());
-		}
+		if (requestType > 0) {
 		
-		
-		if(onlyQueryModel) {
-			String pquery = reasoner.prepareQuery(query);
+			getCodeModelConfigMgr().clearReasoner(); //nulls reasoner and translator
 			
-			ResultSet results = reasoner.ask(pquery);
-			String csvString = results.toString();
-					
-			System.out.print(csvString);
+			IReasoner reasoner = getCodeModelConfigMgr().getReasoner();
 			
-			queryResults = results;
-		}
-		else {
-		
-	        boolean deductionsOnly = true; //true
-			Object infModel = reasoner.getInferredModel(deductionsOnly);
-			if (!(infModel instanceof Model)) {
-				throw new ConfigurationException("The reasoner returned an inferred model of type '" + infModel.getClass().getCanonicalName() + "'; this is not supported by SemanticAnnotator.");
-			}
-			Model inferredModel = (Model) infModel;
-			
-	//		OntModel infOntModel = ModelFactory.createOntologyModel(getCurrentCodeModel().getSpecification(), inferredModel);
-	//
-	//		infOntModel.write(System.out, "N3");
-			
-	//		setInferredModel(infOntModel);
+	//		reasoner.reset(); //keeps reasoner and nulls assoc. models
 	
+			if (!reasoner.isInitialized()) {
+				reasoner.setConfigurationManager(getCodeModelConfigMgr());
+				List<ConfigurationItem> preferences = new ArrayList<ConfigurationItem>();
+				String[] catHier = new String[1];
+				catHier[0] = reasoner.getReasonerFamily();
+				ConfigurationItem ci = new ConfigurationItem(catHier);
+				ci.addNameValuePair(ci.new NameValuePair("pDerivationLogging", "Shallow")); // could also be "Deep"
+				preferences.add(ci);
+				reasoner.initializeReasoner(getCurrentCodeModel(), getCodeModelName(), null, preferences, getCodeModelConfigMgr().getRepoType());
+			}
 			
-	//		inferredModel = inferredModel.remove(aggregateImports);
+			if(requestType > 1) {
+				String pquery = reasoner.prepareQuery(query);
+				
+				ResultSet results = reasoner.ask(pquery);
+				if (results == null) {
+					System.err.print("\n!!! Query returned null !!!\n");
+					System.err.print(pquery);
+					getCurrentCodeModel().write(System.err,"N3");
+					System.err.print("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+				} else {
+					System.out.print(results.toString());
+				}
+				
+				queryResults = results;
+			}
+			else {
 			
-	//		aggregateImports.write(System.out, "N3");
-			
-	//		inferredModel.write(System.out, "N3");
-			
-			getCurrentCodeModel().add(inferredModel);
-			
-	//		getCurrentCodeModel().write(System.out, "N3"); //"N3" "RDF/XML"
+		        boolean deductionsOnly = true; //true
+				Object infModel = reasoner.getInferredModel(deductionsOnly);
+				if (!(infModel instanceof Model)) {
+					throw new ConfigurationException("The reasoner returned an inferred model of type '" + infModel.getClass().getCanonicalName() + "'; this is not supported by SemanticAnnotator.");
+				}
+				Model inferredModel = (Model) infModel;
+				
+		//		OntModel infOntModel = ModelFactory.createOntologyModel(getCurrentCodeModel().getSpecification(), inferredModel);
+		//
+		//		infOntModel.write(System.out, "N3");
+				
+		//		setInferredModel(infOntModel);
 		
+				
+		//		inferredModel = inferredModel.remove(aggregateImports);
+				
+		//		aggregateImports.write(System.out, "N3");
+				
+		//		inferredModel.write(System.out, "N3");
+				
+				getCurrentCodeModel().add(inferredModel);
+				
+		//		getCurrentCodeModel().write(System.out, "N3"); //"N3" "RDF/XML"
+			
+			}
+			
+	//		getCodeModelConfigMgr().clearReasoner();
+
 		}
-		
-		
 		
 		return true;
 	}
@@ -338,14 +356,23 @@ public class GrFNModelExtractor  {
 	// aske/processing/imports/JavaModelExtractorJP.java initializeCodeModel
 	private void initializeGrFNModel(String extractionModelModelFolder) throws ConfigurationException, IOException, TranslationException {
 		// create new code model
-		
+		String repoType;
 		setCodeModelConfigMgr(ConfigurationManagerForIdeFactory.getConfigurationManagerForIDE(extractionModelModelFolder, null)); 
 		OntDocumentManager owlDocMgr = getCodeModelConfigMgr().getJenaDocumentMgr();
 		OntModelSpec spec = new OntModelSpec(OntModelSpec.OWL_MEM);
 		if (extractionModelModelFolder != null) { 
 			File mff = new File(extractionModelModelFolder);
 			mff.mkdirs();
-			spec.setImportModelGetter(getCodeModelConfigMgr().getSadlModelGetterPutter(getCodeModelConfigMgr().getRepoType()));
+			try {
+				repoType = getCodeModelConfigMgr().getRepoType();
+			} catch (Exception e) {
+				repoType = "RDF/XML";
+			}
+
+			if (repoType == null) {
+				repoType = "RDF/XML";
+			}
+			spec.setImportModelGetter(getCodeModelConfigMgr().getSadlModelGetterPutter(repoType));
 //			spec.setImportModelGetter(new SadlJenaModelGetterPutter(spec, extractionModelModelFolder));
 		}
 		if (owlDocMgr != null) {
@@ -358,7 +385,7 @@ public class GrFNModelExtractor  {
 		logger.debug("Ontology '" + getCodeModelName() + "' created");
 		modelOntology.addComment("This ontology was created by extraction from GrFN json by the GraSEN SemanticAnnotator.", "en");
 		setCodeMetaModelUri(GRFN_EXTRACTION_MODEL_URI);
-//		setCodeMetaModelPrefix(GRFN_EXTRACTION_MODEL_PREFIX);
+		setCodeMetaModelPrefix(GRFN_EXTRACTION_MODEL_PREFIX);
 		
 //		OntModel grfnExtractionModel = getCodeModelConfigMgr().getOntModel(getCodeMetaModelUri(), Scope.INCLUDEIMPORTS);
 //		addImportToJenaModel(getCodeModelName(), getCodeMetaModelUri(), getCodeMetaModelPrefix(), grfnExtractionModel);
@@ -915,17 +942,21 @@ public class GrFNModelExtractor  {
 		return varInst;
 	}
 
+	//TODO
 	private Individual getOrCreateExpressionTree(GrFN_ExpressionTree e) {
 		Individual eInst = null;
 		String uid = e.getUid();
 		eInst = getCurrentCodeModel().getIndividual(getCodeModelNamespace() + uid);
     	if (uid == null || eInst == null) {
-    		eInst = getCurrentCodeModel().createIndividual(getCodeModelNamespace() + uid, getExpTreeClass());
+//    		eInst = getCurrentCodeModel().createIndividual(getCodeModelNamespace() + uid, getExpTreeClass());
+    		//Modify: no longer have ExpressionTree class.
+    		eInst = getCurrentCodeModel().createIndividual(getCodeModelNamespace() + uid, getFunctionClass());
+
     	}
     	//If eInst already exists (it's a Function in the GrFN), make it an instance of ExpressionTree
-    	else if (eInst != null) {
-    		eInst.addRDFType(getExpTreeClass());
-    	}
+//    	else if (eInst != null) {
+//    		eInst.addRDFType(getExpTreeClass()); //Modify: no longer have ExpressionTree class.
+//    	}
 		return eInst;
 	}
 
@@ -1119,13 +1150,13 @@ public class GrFNModelExtractor  {
 		this.grFNExtractionModelUri = codeMetaModelUri;
 	}
 	
-//	public String getCodeMetaModelPrefix() {
-//		return grFNExtractionModelPrefix;
-//	}
-//
-//	public void setCodeMetaModelPrefix(String codeMetaModelPrefix) {
-//		this.grFNExtractionModelPrefix = codeMetaModelPrefix;
-//	}
+	public String getCodeMetaModelPrefix() {
+		return grFNExtractionModelPrefix;
+	}
+
+	public void setCodeMetaModelPrefix(String codeMetaModelPrefix) {
+		this.grFNExtractionModelPrefix = codeMetaModelPrefix;
+	}
 	
 
 	private Resource getGrFNClass() {
