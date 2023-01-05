@@ -2,7 +2,7 @@ package com.ge.research.sadl.darpa.aske.rest.grasen.service;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+//import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -158,7 +158,7 @@ public class GrasenControllerTest {
                 + "    }\n"
                 + "  ]\n"
                 + "},"
-                + "'expTree' : []"
+                + "'expTreeArray' : []"
                 + "}";
         
         String simple_stmts_json = "{\n"
@@ -281,7 +281,7 @@ public class GrasenControllerTest {
         		+ "        \"function\": \"2a131d68-eec5-7143-b1c8-7e314019a565\",\n"
         		+ "        \"inputs\": [],\n"
         		+ "        \"outputs\": [\n"
-        		+ "          \"fae64108-bacc-e382-5323-a89ff154fd32\"\n"
+        		+ "          \"fae64108-bacc-e382-5323:a89ff154fd32\"\n"
         		+ "        ]\n"
         		+ "      },\n"
         		+ "      {\n"
@@ -295,7 +295,7 @@ public class GrasenControllerTest {
         		+ "        \"function\": \"83b2ec74-19db-64d3-8332-fb7886edb824\",\n"
         		+ "        \"inputs\": [\n"
         		+ "          \"910b11ea-e7a7-d0f9-6de2-5047784a11d2\",\n"
-        		+ "          \"fae64108-bacc-e382-5323-a89ff154fd32\"\n"
+        		+ "          \"fae64108-bacc-e382-5323:a89ff154fd32\"\n"
         		+ "        ],\n"
         		+ "        \"outputs\": [\n"
         		+ "          \"5dff8a39-8827-a0c4-1d3b-94d3976999da\"\n"
@@ -304,7 +304,7 @@ public class GrasenControllerTest {
         		+ "      {\n"
         		+ "        \"function\": \"6c8353e9-568a-013e-05be-9dc82a387d78\",\n"
         		+ "        \"inputs\": [\n"
-        		+ "          \"fae64108-bacc-e382-5323-a89ff154fd32\",\n"
+        		+ "          \"fae64108-bacc-e382-5323:a89ff154fd32\",\n"
         		+ "          \"5dff8a39-8827-a0c4-1d3b-94d3976999da\"\n"
         		+ "        ],\n"
         		+ "        \"outputs\": [\n"
@@ -343,7 +343,7 @@ public class GrasenControllerTest {
         		+ "        ],\n"
         		+ "        \"namespace\": \"simple_stmts\",\n"
         		+ "        \"nodes\": [\n"
-        		+ "          \"fae64108-bacc-e382-5323-a89ff154fd32\",\n"
+        		+ "          \"fae64108-bacc-e382-5323:a89ff154fd32\",\n"
         		+ "          \"2a131d68-eec5-7143-b1c8-7e314019a565\",\n"
         		+ "          \"910b11ea-e7a7-d0f9-6de2-5047784a11d2\",\n"
         		+ "          \"a9fbde1a-5e12-7a3c-d8a4-563418a5a4ee\",\n"
@@ -575,7 +575,7 @@ public class GrasenControllerTest {
         		+ "          }\n"
         		+ "        ],\n"
         		+ "        \"object_ref\": null,\n"
-        		+ "        \"uid\": \"fae64108-bacc-e382-5323-a89ff154fd32\"\n"
+        		+ "        \"uid\": \"fae64108-bacc-e382-5323:a89ff154fd32\"\n"
         		+ "      },\n"
         		+ "      {\n"
         		+ "        \"identifier\": \"simple_stmts::simple_stmts.main::a::-1\",\n"
@@ -840,7 +840,7 @@ public class GrasenControllerTest {
         		+ "        },\n"
         		+ "        {\n"
         		+ "          \"children\": [],\n"
-        		+ "          \"grfn_uid\": \"fae64108-bacc-e382-5323-a89ff154fd32\",\n"
+        		+ "          \"grfn_uid\": \"fae64108-bacc-e382-5323:a89ff154fd32\",\n"
         		+ "          \"identifier\": \"b\",\n"
         		+ "          \"type\": \"VARIABLE\",\n"
         		+ "          \"uid\": \"e48e3834-542a-f8c6-b746-9a8aef3269e6\"\n"
@@ -863,7 +863,7 @@ public class GrasenControllerTest {
         		+ "        },\n"
         		+ "        {\n"
         		+ "          \"children\": [],\n"
-        		+ "          \"grfn_uid\": \"fae64108-bacc-e382-5323-a89ff154fd32\",\n"
+        		+ "          \"grfn_uid\": \"fae64108-bacc-e382-5323:a89ff154fd32\",\n"
         		+ "          \"identifier\": \"b\",\n"
         		+ "          \"type\": \"VARIABLE\",\n"
         		+ "          \"uid\": \"565461ca-02b4-1d43-85ed-a31673ba1f66\"\n"
@@ -901,7 +901,7 @@ public class GrasenControllerTest {
         		+ "      \"nodes\": [\n"
         		+ "        {\n"
         		+ "          \"children\": [],\n"
-        		+ "          \"grfn_uid\": \"fae64108-bacc-e382-5323-a89ff154fd32\",\n"
+        		+ "          \"grfn_uid\": \"fae64108-bacc-e382-5323:a89ff154fd32\",\n"
         		+ "          \"identifier\": \"b\",\n"
         		+ "          \"type\": \"VARIABLE\",\n"
         		+ "          \"uid\": \"69173597-a30c-31a8-b867-0111f6ca4755\"\n"
@@ -924,7 +924,7 @@ public class GrasenControllerTest {
         		+ "        },\n"
         		+ "        {\n"
         		+ "          \"children\": [],\n"
-        		+ "          \"grfn_uid\": \"fae64108-bacc-e382-5323-a89ff154fd32\",\n"
+        		+ "          \"grfn_uid\": \"fae64108-bacc-e382-5323:a89ff154fd32\",\n"
         		+ "          \"identifier\": \"b\",\n"
         		+ "          \"type\": \"VARIABLE\",\n"
         		+ "          \"uid\": \"8aca8b20-68fe-2351-035b-86041c37bcbf\"\n"

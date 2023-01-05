@@ -2,6 +2,6 @@
 #  Created from SADL model 'http://sadl.org/SemAnnotator.sadl'
 
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-@prefix sam: <http://grasen.ge.com/SemanticAnalysisModel.sadl#>
+@prefix sam: <http://grasen.ge.com/SemanticAnalysisModel#>
 
-[dummyR5: (?x rdf:type http://grasen.ge.com/SemanticAnalysisModel.sadl#Controller) -> (?x rdf:type http://grasen.ge.com/SemanticAnalysisModel.sadl#Controller)]
+[dummyR5: (?x rdf:type http://grasen.ge.com/SemanticAnalysisModel#Controller) -> (?x rdf:type http://grasen.ge.com/SemanticAnalysisModel#Controller)]

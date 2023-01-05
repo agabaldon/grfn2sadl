@@ -93,7 +93,7 @@ import com.google.gson.Gson;
 public class GrFNModelExtractor  {
 
 //	public static final String EXTRACTED_MODELS_FOLDER_PATH_FRAGMENT = "ExtractedModels";
-	public static final String GRFN_EXTRACTION_MODEL_URI = "http://sadl.org/GrFNExtractionModel.sadl";
+	public static final String GRFN_EXTRACTION_MODEL_URI = "http://grasen.ge.com/GrFNExtractionModel";
 	public static final String GRFN_EXTRACTION_MODEL_PREFIX = "grfnem";
 	public static final String SEMANNOTATOR_MODEL_URI = "http://sadl.org/SemAnnotator.sadl";
 //	public static final String SEMANNOTATOR_MODEL_PREFIX = "semannotator";
@@ -123,10 +123,10 @@ public class GrFNModelExtractor  {
 	
 	private ResultSet queryResults;
 	
-	private String query = "select distinct ?Name (?Q4 as ?Function_name) (strafter(str(?Annotation),'#') as ?AnnotationType) ?Description ?Loc_start ?Loc_end ?Equation ?SrcLocStart ?SrcLocEnd\n"
+	private String query = "select distinct ?Name ?Qual_name (?Q4 as ?Function_name) (strafter(str(?Annotation),'#') as ?AnnotationType) ?Description ?Loc_start ?Loc_end ?Equation ?SrcLocStart ?SrcLocEnd\n"
 			+ "where {\n"
 			+ "{ ?Annotation <rdfs:subClassOf>* <ControllerConstruct>\n"
-			+ ". ?x a ?Annotation \n"
+			+ ". ?x a ?Annotation\n"
 			+ ".  filter not exists {\n"
 			+ "       ?C <rdfs:subClassOf> ?Annotation.\n"
 			+ "       ?x a ?C.\n"
@@ -134,39 +134,65 @@ public class GrFNModelExtractor  {
 			+ ". ?x <varName> ?Name\n"
 			+ ". ?Annotation <description> ?Description\n"
 			+ ". ?x <identifier> ?Qual_name\n"
-			+ ". FILTER(!regex(?Qual_name, 'LOOP')) # maybe there is a more generic way to drop, e.g. from_source is false etc.\n"
+			+ ". FILTER(!regex(str(?Qual_name), 'LOOP')) # maybe there is a more generic way to drop, e.g. from_source is false etc.\n"
 			+ "#. LET(?Q2 := replace(str(?Qual_name),'.*\\\\.','')) # why does this give an error?????\n"
-			+ ". LET(?Q2 := replace(?Qual_name,'[.]','###'))\n"
-			+ ". LET(?Q3 := replace(?Q2,'.*###',''))\n"
-			+ ". LET(?Q4 := replace(?Q3,'::.*',''))\n"
+			+ ". LET(?Q2 := replace(str(?Qual_name),'[.]','###'))\n"
+			+ ". LET(?Q3 := replace(str(?Q2),'.*###',''))\n"
+			+ ". LET(?Q4 := replace(str(?Q3),'::.*',''))\n"
 			+ ". ?x <metadata> ?md\n"
 			+ ". LET(?Loc_start := 1)\n"
 			+ ". LET(?Loc_end := 999)\n"
-			+ ". OPTIONAL{?md <line_begin> ?SrcLocStart} \n"
+			+ ". OPTIONAL{?md <line_begin> ?SrcLocStart}\n"
 			+ ". OPTIONAL{?md <line_end> ?SrcLocEnd}\n"
-			+ ". OPTIONAL{?x <semanticExpression> ?Equation} \n"
+			+ ". OPTIONAL{?x <semanticExpression> ?Equation}\n"
 			+ "} union {\n"
 			+ "?sg <rdf:type> <SubGraph>\n"
 			+ ". ?sg <nodes> ?x\n"
 			+ ". ?x <rdf:type> <Controller>\n"
 			+ ". ?x <constructName> ?Name\n"
-			+ ". LET(?Q2 := replace(?Name,'[.]','###'))\n"
-			+ ". LET(?Q4 := replace(?Q2,'.*###',''))\n"
-			+ ". ?x a ?Annotation\n"
-			+ ".  filter not exists {\n"
+			+ ". LET(?Q2 := replace(str(?Name),'[.]','###'))\n"
+			+ ". LET(?Q4 := replace(str(?Q2),'.*###',''))\n"
+			+ "#. ?x <rdfs:subClassOf> <Controller>\n"
+			+ ". ?x a ?Annotation.\n"
+			+ "  filter not exists {\n"
 			+ "       ?C <rdfs:subClassOf> ?Annotation.\n"
 			+ "       ?x a ?C.\n"
 			+ "     }\n"
-			+ ". ?Annotation <rdfs:subClassOf>* <ControllerConstruct>\n"
+			+ "  ?Annotation <rdfs:subClassOf>* <ControllerConstruct>\n"
 			+ ". LET(?Loc_start := 1)\n"
 			+ ". LET(?Loc_end := 999)\n"
 			+ ". OPTIONAL{?x <linebegin> ?SrcLocStart.}\n"
 			+ ". OPTIONAL{?x <lineend> ?SrcLocEnd.}\n"
 			+ ". ?Annotation <description> ?Description\n"
-			+ ". OPTIONAL{?x <lambda> ?Eq\n"
-			+ ". LET(?Equation := replace(?Eq,'^.*: ',''))}\n"
-			+ "} \n"
-			+ "} order by ?AnnotationType ?Name";
+			+ ". OPTIONAL{?x <lambda> ?Eq . \n"
+			+ "    LET(?Equation := replace(str(?Eq),'^.*: ',''))}\n"
+			+ "} union { # get the ControlConstructs that are identified inline\n"
+			+ "?nd <rdf:type> <ControllerConstruct>\n"
+			+ ". ?fun <nodes> ?nd \n"
+			+ ". ?fun <lambda> ?Eq\n"
+			+ ". ?nd <rdf:type> ?Annotation\n"
+			+ ". ?Annotation <rdfs:subClassOf> <ControllerConstruct>\n"
+			+ ". ?Annotation <description> ?Description .\n"
+			+ "filter not exists{?nd a <Variable>.}\n"
+			+ " LET(?Equation := replace(str(?Eq),'^.*: ',''))\n"
+			+ ". LET(?Loc_start := 1)\n"
+			+ ". LET(?Loc_end := 999)\n"
+			+ ". ?fun <metadata> ?md\n"
+			+ ". OPTIONAL{?md <line_begin> ?SrcLocStart}\n"
+			+ ". OPTIONAL{?md <line_end> ?SrcLocEnd}\n"
+			+ ". ?he <rdf:type> <HyperEdge> \n"
+			+ ". ?he <function> ?fun\n"
+			+ ". ?he <outputs> ?out . ?out <identifier> ?Qual_name\n"
+			+ "#. LET(?Function_name := 'TBD')\n"
+			+ " \n"
+			+ "#. ?x <identifier> ?Qual_name\n"
+			+ ". FILTER(!regex(str(?Qual_name), 'LOOP')) # maybe there is a more generic way to drop, e.g. from_source is false etc.\n"
+			+ "#. LET(?Q2 := replace(str(?Qual_name),'.*\\\\.','')) # why does this give an error?????\n"
+			+ ". LET(?Q2 := replace(str(?Qual_name),'[.]','###'))\n"
+			+ ". LET(?Q3 := replace(str(?Q2),'.*###',''))\n"
+			+ ". LET(?Q4 := replace(str(?Q3),'::.*',''))\n"
+			+ "}\n"
+			+ "} order by ?AnnotationType ?Name ?SrcLocStart";
 	
 //	private Individual rootContainingInstance = null;
 
@@ -615,7 +641,7 @@ public class GrFNModelExtractor  {
 						mdInst.addLiteral(getLineEndsProperty(), mdEntry.getCode_span().getLine_end());						
 					}
 				}
-				else if (mdEntry.getType().equals("from_source")) {
+				else if (mdEntry.getType().toLowerCase().equals("from_source")) {
 					boolean fs = mdEntry.getFrom_source();
 					mdInst.addLiteral(getFromSourceProperty(), fs);
 				}
@@ -638,7 +664,7 @@ public class GrFNModelExtractor  {
 		}
 
 		p = gr.getDate_created();
-		if (p != null) {
+		if (p != null && !p.equals("timestamp")) {
 			addDataProperty(grfnInst, getDateCreatedProperty(), p);
 		}
 
@@ -901,6 +927,7 @@ public class GrFNModelExtractor  {
 		if (uid.length() > 0 && Character.isDigit(uid.toCharArray()[0]) ) {
 			uid = "_" + uid;
 		}
+		uid = uid.replaceAll(":", "_");
 		fnInst = getCurrentCodeModel().getIndividual(getCodeModelNamespace() + uid);
     	if (fnInst == null) {
     		fnInst = getCurrentCodeModel().createIndividual(getCodeModelNamespace() + uid, getFunctionClass());
@@ -915,7 +942,8 @@ public class GrFNModelExtractor  {
 	
 	private Individual getOrCreateVariable(GrFN_Variable var) {
 		Individual varInst = null;
-		String uid = var.getUid(); 
+		String uid = var.getUid();
+		uid = uid.replaceAll(":", "_");
 		varInst = getCurrentCodeModel().getIndividual(getCodeModelNamespace() + uid);
 		if (varInst == null) {
 			varInst = getCurrentCodeModel().createIndividual(getCodeModelNamespace() + uid, getVariableClass());
@@ -932,6 +960,7 @@ public class GrFNModelExtractor  {
 		if (uid.length() > 0 && Character.isDigit(uid.toCharArray()[0]) ) {
 			uid = "_" + uid;
 		}
+		uid = uid.replaceAll(":", "_");
 		varInst = getCurrentCodeModel().getIndividual(getCodeModelNamespace() + uid);
 		if (varInst == null) {
 			varInst = getCurrentCodeModel().createIndividual(getCodeModelNamespace() + uid, getVariableClass());
@@ -992,6 +1021,7 @@ public class GrFNModelExtractor  {
 		if (uid.length() > 0 && Character.isDigit(uid.toCharArray()[0]) ) {
 			uid = "_" + uid;
 		}
+		uid = uid.replaceAll(":", "_");
 		sgInst = getCurrentCodeModel().getIndividual(getCodeModelNamespace() + uid);
 		if (sgInst == null) {
 			sgInst = getCurrentCodeModel().createIndividual(getCodeModelNamespace() + uid, getSubgraphClass());
@@ -1062,6 +1092,7 @@ public class GrFNModelExtractor  {
 		if (uid.length() > 0 && Character.isDigit(uid.toCharArray()[0]) ) {
 			uid = "_" + uid;
 		}
+		uid = uid.replaceAll(":", "_");
 		ndInst = getCurrentCodeModel().getIndividual(getCodeModelNamespace() + uid);
 		if (ndInst == null) {
 			System.out.println("Something's wrong. Subgraph node with " + uid + " does not exist!");
@@ -1084,6 +1115,7 @@ public class GrFNModelExtractor  {
 		if (uid.length() > 0 && Character.isDigit(uid.toCharArray()[0]) ) {
 			uid = "_" + uid;
 		}
+		uid = uid.replaceAll(":", "_");
 		ndInst = getCurrentCodeModel().getIndividual(getCodeModelNamespace() + uid);
 		if (ndInst == null) {
 			ndInst = getCurrentCodeModel().createIndividual(getCodeModelNamespace() + uid, getExpNodeClass());
